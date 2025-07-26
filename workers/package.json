@@ -1,0 +1,14 @@
+{
+  "name": "valu8-workers",
+  "version": "1.0.0",
+  "description": "Cloudflare Workers API for valu8",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "deploy:production": "wrangler deploy --env production"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}

@@ -1,5 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Plus, X } from 'lucide-react';
+import { ApiKeyManager } from '../utils/apiKeyManager';
+import { MistralClient } from '../utils/mistralClient';
+import ApiKeyModal from './ApiKeyModal';
 
 interface IntroPageProps {
   onComplete: () => void;
@@ -18,6 +21,7 @@ const IntroPage: React.FC<IntroPageProps> = ({ onComplete, onVCModeChange }) => 
   const [selectedRegion, setSelectedRegion] = useState('EU');
   const [linkedinUrls, setLinkedinUrls] = useState<string[]>(['']);
   const [showRegionsDropdown, setShowRegionsDropdown] = useState(false);
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const followupRef = useRef<HTMLDivElement>(null);
 
   const regions = ['EU', 'US', 'Asia', 'Global'];
@@ -41,31 +45,22 @@ const IntroPage: React.FC<IntroPageProps> = ({ onComplete, onVCModeChange }) => 
     e.preventDefault();
     if (!initialInput.trim()) return;
 
+    // Check if API key is available
+    if (!ApiKeyManager.hasApiKey()) {
+      setShowApiKeyModal(true);
+      return;
+    }
+
     setIsLoading(true);
     
     try {
-      const response = await fetch('http://localhost:3001/api/followup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ initialInput }),
-      });
-
-      const data = await response.json();
-      
-      if (data.success) {
-        setFollowupQuestion(data.question);
-        setShowFollowup(true);
-      } else {
-        // Fallback to mock if API fails
-        setFollowupQuestion("What specific problem does your product solve and who is your target customer?");
-        setShowFollowup(true);
-      }
+      const followupQuestion = await MistralClient.generateFollowup(initialInput);
+      setFollowupQuestion(followupQuestion);
+      setShowFollowup(true);
     } catch (error) {
-      // Fallback to mock if API fails
       console.error('Failed to get followup question:', error);
-      setFollowupQuestion("What specific problem does your product solve and who is your target customer?");
+      // Fallback to mock
+      setFollowupQuestion(MistralClient.getFallbackData('followup'));
       setShowFollowup(true);
     } finally {
       setIsLoading(false);
@@ -75,6 +70,18 @@ const IntroPage: React.FC<IntroPageProps> = ({ onComplete, onVCModeChange }) => 
   const handleFollowupSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!followupAnswer.trim()) return;
+    
+    // Save research inputs for the next page
+    const researchInputs = {
+      initialInput,
+      followupAnswer,
+      vcMode: isVCMode,
+      roastMode,
+      region: selectedRegion,
+      teamUrls: isVCMode ? linkedinUrls.filter(url => url.trim()) : []
+    };
+    
+    ApiKeyManager.saveResearchData({ inputs: researchInputs });
     setShowButtons(true);
   };
 
@@ -125,7 +132,7 @@ const IntroPage: React.FC<IntroPageProps> = ({ onComplete, onVCModeChange }) => 
                 className={`minimal-button px-2 py-1 border border-gray-800 rounded-full text-xs ${roastMode ? 'text-yellow-400 border-yellow-400' : ''}`}
                 disabled={showFollowup}
               >
-                Roast
+                Roast mode
               </button>
 
               {/* Regions Filter */}
@@ -260,6 +267,17 @@ const IntroPage: React.FC<IntroPageProps> = ({ onComplete, onVCModeChange }) => 
             </button>
           </div>
         )}
+
+        {/* API Key Modal */}
+        <ApiKeyModal
+          isOpen={showApiKeyModal}
+          onClose={() => setShowApiKeyModal(false)}
+          onKeySet={() => {
+            setShowApiKeyModal(false);
+            // Retry the submission
+            handleInitialSubmit({ preventDefault: () => {} } as React.FormEvent);
+          }}
+        />
       </div>
     </div>
   );
