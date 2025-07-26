@@ -3,9 +3,10 @@ import { ChevronDown, Plus, X } from 'lucide-react';
 
 interface IntroPageProps {
   onComplete: () => void;
+  onVCModeChange?: (isVCMode: boolean) => void;
 }
 
-const IntroPage: React.FC<IntroPageProps> = ({ onComplete }) => {
+const IntroPage: React.FC<IntroPageProps> = ({ onComplete, onVCModeChange }) => {
   const [initialInput, setInitialInput] = useState('');
   const [showFollowup, setShowFollowup] = useState(false);
   const [followupQuestion, setFollowupQuestion] = useState('');
@@ -95,7 +96,11 @@ const IntroPage: React.FC<IntroPageProps> = ({ onComplete }) => {
           
           {/* Subtle Enterprise Toggle */}
           <button
-            onClick={() => setIsVCMode(!isVCMode)}
+            onClick={() => {
+              const newVCMode = !isVCMode;
+              setIsVCMode(newVCMode);
+              onVCModeChange?.(newVCMode);
+            }}
             className={`subtle-button ${isVCMode ? 'active' : ''}`}
           >
             {isVCMode ? 'Switch to Startup' : 'Enterprise Mode'}

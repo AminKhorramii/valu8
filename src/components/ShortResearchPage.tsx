@@ -38,13 +38,6 @@ const ShortResearchPage: React.FC<ShortResearchPageProps> = ({ onNext, onRefine 
   const businessOverviewInsights = aiInsights.filter(insight => insight.category === 'Business Overview');
   const marketResearchInsights = aiInsights.filter(insight => insight.category === 'Market Research');
 
-  const openStory = (companyName: string) => {
-    const storyKey = companyName.toLowerCase().replace(/\s+/g, '');
-    const story = companyStories.find(s => s.id === storyKey);
-    if (story) {
-      window.open(`/story/${story.id}`, '_blank');
-    }
-  };
 
   // If a story is selected, show the story page
   if (selectedStory) {

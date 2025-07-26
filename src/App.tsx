@@ -7,20 +7,27 @@ type Page = 'intro' | 'short-research' | 'long-research';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('intro');
+  const [isVCMode, setIsVCMode] = useState(false);
 
   const renderPage = () => {
     switch (currentPage) {
       case 'intro':
-        return <IntroPage onComplete={() => setCurrentPage('short-research')} />;
+        return <IntroPage 
+          onComplete={() => setCurrentPage('short-research')} 
+          onVCModeChange={setIsVCMode}
+        />;
       case 'short-research':
         return <ShortResearchPage 
           onNext={() => setCurrentPage('long-research')} 
           onRefine={() => setCurrentPage('intro')}
         />;
       case 'long-research':
-        return <LongResearchPage />;
+        return <LongResearchPage isVCMode={isVCMode} />;
       default:
-        return <IntroPage onComplete={() => setCurrentPage('short-research')} />;
+        return <IntroPage 
+          onComplete={() => setCurrentPage('short-research')} 
+          onVCModeChange={setIsVCMode}
+        />;
     }
   };
 
