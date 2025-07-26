@@ -316,3 +316,43 @@ const server = app.listen(config.server.port, () => {
 
 // Set server timeout to match configuration
 server.timeout = config.server.timeout;
+
+// Mock followup question endpoint
+app.post('/api/followup', async (req, res) => {
+  const { requestId } = req;
+  
+  try {
+    const { initialInput } = req.body;
+    
+    if (!initialInput || initialInput.trim().length === 0) {
+      return res.status(400).json({ error: 'No input provided', requestId });
+    }
+    
+    logger.info('Generating followup question', {
+      requestId,
+      inputLength: initialInput.length
+    });
+    
+    // Mock response - in production this would call AI
+    const followupQuestion = "What specific problem does your product solve and who is your target customer?";
+    
+    res.json({
+      success: true,
+      question: followupQuestion,
+      metadata: {
+        requestId
+      }
+    });
+    
+  } catch (error) {
+    logger.error('Followup generation failed', { 
+      requestId, 
+      error: error.message 
+    });
+    
+    res.status(500).json({ 
+      error: 'Failed to generate followup question',
+      requestId
+    });
+  }
+});
