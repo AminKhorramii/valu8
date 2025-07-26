@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { ChevronDown, ExternalLink, TrendingUp, TrendingDown, Minus, ArrowLeft } from 'lucide-react';
+import { ChevronDown, ExternalLink, TrendingUp, TrendingDown, Minus, ArrowLeft, BookOpen } from 'lucide-react';
 import { vcData, aiInsights } from '../data/mockData';
+import { companyStories } from '../data/companyStories';
 import { Company, InsightCard } from '../types';
+import CompanyStoryPage from './CompanyStoryPage';
 
 interface ShortResearchPageProps {
   onNext: () => void;
@@ -11,6 +13,7 @@ interface ShortResearchPageProps {
 const ShortResearchPage: React.FC<ShortResearchPageProps> = ({ onNext, onRefine }) => {
   const [selectedVC, setSelectedVC] = useState(vcData[0]);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedStory, setSelectedStory] = useState<string | null>(null);
 
   const activeCompanies = selectedVC.companies.filter((c: Company) => c.status === 'active');
   const inactiveCompanies = selectedVC.companies.filter((c: Company) => c.status === 'inactive');
@@ -35,71 +38,89 @@ const ShortResearchPage: React.FC<ShortResearchPageProps> = ({ onNext, onRefine 
   const businessOverviewInsights = aiInsights.filter(insight => insight.category === 'Business Overview');
   const marketResearchInsights = aiInsights.filter(insight => insight.category === 'Market Research');
 
+  const openStory = (companyName: string) => {
+    const storyKey = companyName.toLowerCase().replace(/\s+/g, '');
+    const story = companyStories.find(s => s.id === storyKey);
+    if (story) {
+      window.open(`/story/${story.id}`, '_blank');
+    }
+  };
+
+  // If a story is selected, show the story page
+  if (selectedStory) {
+    const story = companyStories.find(s => s.id === selectedStory);
+    if (story) {
+      return <CompanyStoryPage story={story} onBack={() => setSelectedStory(null)} />;
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="max-w-4xl mx-auto px-4 py-12">
-        {/* Header */}
-        <div className="text-center mb-16 space-y-4">
-          <h2 className="text-5xl font-bold gradient-logo tracking-tight">What did we understand from your ideas?</h2>
-          <p className="text-gray-400 text-lg">Here's our AI analysis of your startup concept</p>
-        </div>
-
-        {/* AI Insights Section */}
-        <div className="space-y-16">
-          {/* Business Overview */}
+    <div className="min-h-screen bg-black text-white pb-20">
+      <div className="max-w-7xl mx-auto px-4 py-12">
+        {/* Two Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          
+          {/* Left Column - AI Insights */}
           <div className="space-y-8">
-            <h3 className="text-2xl font-semibold text-center">Business Overview</h3>
-            <div className="space-y-4">
-              {businessOverviewInsights.map((insight, index) => (
-                <div
-                  key={index}
-                  className="glass-card p-6 space-y-4 card-hover animate-fade-in-up"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      {getScoreIcon(insight.type)}
-                      <h4 className="text-lg font-medium">{insight.title}</h4>
+            <div>
+              <h2 className="text-3xl font-bold text-white mb-8">
+                What did we understand from your ideas?
+              </h2>
+              
+              {/* Business Overview Section */}
+              <div className="space-y-6 mb-12">
+                <h3 className="text-xl font-semibold text-gray-300">Business Overview</h3>
+                <div className="space-y-4">
+                  {businessOverviewInsights.map((insight, index) => (
+                    <div
+                      key={index}
+                      className="glass-card p-5 space-y-3 card-hover"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          {getScoreIcon(insight.type)}
+                          <h4 className="font-medium text-white">{insight.title}</h4>
+                        </div>
+                        <div className={`text-sm font-medium ${getScoreColor(insight.score)}`}>
+                          {insight.score}/100
+                        </div>
+                      </div>
+                      <p className="text-gray-400 text-sm leading-relaxed">{insight.insight}</p>
                     </div>
-                    <div className={`text-sm font-medium ${getScoreColor(insight.score)}`}>
-                      {insight.score}/100
-                    </div>
-                  </div>
-                  <p className="text-gray-300 leading-relaxed">{insight.insight}</p>
+                  ))}
                 </div>
-              ))}
+              </div>
+
+              {/* Market Research Section */}
+              <div className="space-y-6">
+                <h3 className="text-xl font-semibold text-gray-300">Market Research</h3>
+                <div className="space-y-4">
+                  {marketResearchInsights.map((insight, index) => (
+                    <div
+                      key={index}
+                      className="glass-card p-5 space-y-3 card-hover"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          {getScoreIcon(insight.type)}
+                          <h4 className="font-medium text-white">{insight.title}</h4>
+                        </div>
+                        <div className={`text-sm font-medium ${getScoreColor(insight.score)}`}>
+                          {insight.score}/100
+                        </div>
+                      </div>
+                      <p className="text-gray-400 text-sm leading-relaxed">{insight.insight}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Market Research */}
+          {/* Right Column - Similar Companies */}
           <div className="space-y-8">
-            <h3 className="text-2xl font-semibold text-center">Market Research</h3>
-            <div className="space-y-4">
-              {marketResearchInsights.map((insight, index) => (
-                <div
-                  key={index}
-                  className="glass-card p-6 space-y-4 card-hover animate-fade-in-up"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      {getScoreIcon(insight.type)}
-                      <h4 className="text-lg font-medium">{insight.title}</h4>
-                    </div>
-                    <div className={`text-sm font-medium ${getScoreColor(insight.score)}`}>
-                      {insight.score}/100
-                    </div>
-                  </div>
-                  <p className="text-gray-300 leading-relaxed">{insight.insight}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Similar Companies Section */}
-          <div className="space-y-8">
-            <div className="flex items-center justify-center">
-              <h3 className="text-2xl font-semibold mr-4">Similar companies from</h3>
+            <div className="flex items-center gap-4">
+              <h2 className="text-3xl font-bold text-white">Similar companies from</h2>
               <div className="relative">
                 <button
                   onClick={() => setShowDropdown(!showDropdown)}
@@ -108,7 +129,7 @@ const ShortResearchPage: React.FC<ShortResearchPageProps> = ({ onNext, onRefine 
                   {selectedVC.name} <ChevronDown className="w-4 h-4" />
                 </button>
                 {showDropdown && (
-                  <div className="absolute right-0 mt-2 w-48 bg-gray-900 border border-gray-800 rounded-lg shadow-xl z-10 animate-slide-down">
+                  <div className="absolute right-0 mt-2 w-48 bg-gray-900 border border-gray-800 rounded-lg shadow-xl z-10">
                     {vcData.map((vc) => (
                       <button
                         key={vc.id}
@@ -128,33 +149,32 @@ const ShortResearchPage: React.FC<ShortResearchPageProps> = ({ onNext, onRefine 
 
             {/* Active Companies */}
             <div className="space-y-6">
-              <h4 className="text-xl font-medium text-green-400 text-center">Active Companies</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {activeCompanies.map((company: Company, index) => (
+              <h3 className="text-lg font-medium text-green-400">Active Companies</h3>
+              <div className="space-y-3">
+                {activeCompanies.map((company: Company) => (
                   <div
                     key={company.id}
-                    className={`glass-card p-6 space-y-4 card-hover ${company.gradient} animate-fade-in-up`}
-                    style={{ animationDelay: `${index * 0.1}s` }}
+                    className={`glass-card p-4 card-hover ${company.gradient}`}
                   >
-                    <div className="flex items-start justify-between">
+                    <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         {company.logo ? (
                           <img 
                             src={company.logo} 
                             alt={`${company.name} logo`} 
-                            className="w-8 h-8 rounded"
+                            className="w-6 h-6 rounded"
                             onError={(e) => {
                               (e.target as HTMLImageElement).style.display = 'none';
                             }}
                           />
                         ) : (
-                          <div className="w-8 h-8 bg-gray-700 rounded flex items-center justify-center text-xs font-bold">
+                          <div className="w-6 h-6 bg-gray-700 rounded flex items-center justify-center text-xs font-bold">
                             {company.name.slice(0, 2).toUpperCase()}
                           </div>
                         )}
-                        <div>
-                          <h5 className="font-semibold text-lg">{company.name}</h5>
-                          <p className="text-gray-400 text-sm">{company.tagline}</p>
+                        <div className="flex-1">
+                          <h4 className="font-medium text-white">{company.name}</h4>
+                          <p className="text-gray-400 text-xs">{company.tagline}</p>
                         </div>
                       </div>
                       {company.link !== '#' && (
@@ -175,34 +195,49 @@ const ShortResearchPage: React.FC<ShortResearchPageProps> = ({ onNext, onRefine 
 
             {/* Inactive Companies */}
             <div className="space-y-6">
-              <h4 className="text-xl font-medium text-red-400 text-center">Inactive Companies</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {inactiveCompanies.map((company: Company, index) => (
-                  <div
-                    key={company.id}
-                    className={`glass-card p-6 space-y-4 opacity-60 ${company.gradient} animate-fade-in-up`}
-                    style={{ animationDelay: `${index * 0.1}s` }}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-gray-700 rounded flex items-center justify-center text-xs font-bold">
-                          {company.name.slice(0, 2).toUpperCase()}
+              <h3 className="text-lg font-medium text-red-400">Inactive Companies</h3>
+              <div className="space-y-3">
+                {inactiveCompanies.map((company: Company) => {
+                  const hasStory = companyStories.some(s => s.id === company.name.toLowerCase().replace(/\s+/g, ''));
+                  
+                  return (
+                    <div
+                      key={company.id}
+                      className={`glass-card p-4 opacity-60 ${company.gradient}`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3 flex-1">
+                          <div className="w-6 h-6 bg-gray-700 rounded flex items-center justify-center text-xs font-bold">
+                            {company.name.slice(0, 2).toUpperCase()}
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-medium text-white">{company.name}</h4>
+                            <p className="text-gray-400 text-xs">{company.tagline}</p>
+                          </div>
                         </div>
-                        <div>
-                          <h5 className="font-semibold text-lg">{company.name}</h5>
-                          <p className="text-gray-400 text-sm">{company.tagline}</p>
-                        </div>
+                        {hasStory && (
+                          <button
+                            onClick={() => setSelectedStory(company.name.toLowerCase().replace(/\s+/g, ''))}
+                            className="flex items-center gap-1 px-2 py-1 text-xs text-yellow-400 hover:text-yellow-300 transition-colors border border-yellow-400/30 rounded hover:border-yellow-400/50"
+                          >
+                            <BookOpen className="w-3 h-3" />
+                            Read the story
+                          </button>
+                        )}
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="mt-20 flex items-center justify-center gap-6">
+      </div>
+      
+      {/* Sticky Action Buttons */}
+      <div className="fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-sm border-t border-gray-800 p-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-center gap-6">
           <button 
             onClick={onRefine} 
             className="button-secondary flex items-center gap-2"
@@ -211,7 +246,7 @@ const ShortResearchPage: React.FC<ShortResearchPageProps> = ({ onNext, onRefine 
             Refine
           </button>
           <button onClick={onNext} className="button-primary">
-            Start the research
+            Now lets do a broad research
           </button>
         </div>
       </div>
