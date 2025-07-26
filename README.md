@@ -1,46 +1,150 @@
-# Getting Started with Create React App
+# 🚀 Pitch Deck Analyzer
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A modern, AI-powered pitch deck analyzer that evaluates startup presentations through voice or text input and provides comprehensive feedback with an interactive notes board.
 
-## Available Scripts
+## ✨ Features
 
-In the project directory, you can run:
+- **🎤 Voice & Text Input**: Toggle between voice recording and text input for maximum accessibility
+- **🤖 AI-Powered Analysis**: Uses OpenAI GPT-4o to analyze pitch decks across 10 key categories
+- **📊 Interactive Canvas**: Drag-and-drop notes board for visualizing feedback
+- **🎨 Dark UI**: Modern interface inspired by Linear and Vercel design systems
+- **📈 Observability**: Built-in tracking with ORQ.ai for usage analytics
+- **🔊 Speech-to-Text**: Powered by OpenAI Whisper for accurate transcription
 
-### `npm start`
+## 🏗️ Tech Stack
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+- **Frontend**: React 19 + TypeScript + Tailwind CSS
+- **Backend**: Node.js + Express
+- **AI**: OpenAI GPT-4o + Whisper
+- **Observability**: ORQ.ai
+- **UI**: Dark theme with glass morphism effects
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## 📋 Analysis Categories
 
-### `npm test`
+The AI evaluates pitches across these key areas:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+1. **Problem Statement** - Problem clarity and market validation
+2. **Solution** - Innovation and value proposition
+3. **Market Size** - TAM/SAM/SOM analysis
+4. **Business Model** - Revenue model and unit economics
+5. **Team** - Experience and domain expertise
+6. **Traction** - Growth metrics and validation
+7. **Competition** - Competitive landscape understanding
+8. **Financial Projections** - Realistic forecasting
+9. **Funding Ask** - Justification and use of funds
+10. **Go-to-Market Strategy** - Customer acquisition plan
 
-### `npm run build`
+## 🚀 Quick Start
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Prerequisites
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- Node.js 16+
+- OpenAI API key
+- ORQ.ai API key (optional)
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Installation
 
-### `npm run eject`
+1. **Clone and install dependencies**
+   ```bash
+   cd pitch-deck-analyzer
+   npm install
+   ```
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+2. **Set up environment variables**
+   ```bash
+   npm run setup
+   ```
+   
+   Then edit `.env` with your API keys:
+   ```env
+   OPENAI_API_KEY=your_openai_api_key_here
+   ORQ_API_KEY=your_orq_api_key_here
+   PORT=5000
+   ```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+3. **Start the application**
+   ```bash
+   npm run dev
+   ```
+   
+   This starts both the React frontend (port 3000) and Express backend (port 5001).
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+### Manual Setup
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+If you prefer to run components separately:
 
-## Learn More
+```bash
+# Terminal 1 - Backend
+npm run server
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+# Terminal 2 - Frontend
+npm start
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## 📖 Usage
+
+1. **Open the app** at `http://localhost:3000`
+2. **Choose input method**: Toggle between Text or Voice input
+3. **Provide your pitch**:
+   - **Text**: Describe your startup idea in the text area
+   - **Voice**: Click "Start Recording" and speak your pitch
+4. **Get analysis**: The AI will evaluate your pitch across all categories
+5. **Interactive feedback**: Use the notes board to drag, edit, and organize feedback
+6. **Iterate**: Click "New Analysis" to analyze another pitch
+
+## 🎯 Perfect for Hackathons
+
+This tool is designed specifically for hackathon environments:
+
+- **Fast setup** - Get running in minutes
+- **No authentication** - Anonymous usage for quick demos
+- **Comprehensive feedback** - Helps refine pitches during the event
+- **Visual presentation** - Great for showcasing to judges
+- **Accessibility focused** - Voice input removes barriers
+
+## 🔧 API Endpoints
+
+### POST `/api/transcribe`
+Transcribes audio files using OpenAI Whisper
+- **Body**: `multipart/form-data` with audio file
+- **Response**: `{ text: string }`
+
+### POST `/api/analyze`
+Analyzes pitch content using GPT-4o
+- **Body**: `{ content: string }`
+- **Response**: Analysis object with scores and feedback
+
+## 🎨 Design System
+
+The UI follows a dark theme inspired by Linear and Vercel:
+
+- **Colors**: Pure black backgrounds with subtle borders
+- **Typography**: Inter font family
+- **Effects**: Glass morphism cards with backdrop blur
+- **Animations**: Smooth transitions and hover effects
+- **Components**: Consistent button styles and form inputs
+
+## 📊 Observability
+
+Built-in tracking with ORQ.ai monitors:
+
+- Transcription success/failure rates
+- Analysis completion times
+- Model performance metrics
+- Error tracking and debugging
+- Usage analytics
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
+
+## 📝 License
+
+This project is open source and available under the MIT License.
+
+---
+
+**Built for hackathons with ❤️**
