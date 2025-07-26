@@ -21,7 +21,7 @@ export interface ResearchRequest {
 
 export class MistralClient {
   private static readonly API_BASE = process.env.NODE_ENV === 'production' 
-    ? '/api' 
+    ? process.env.REACT_APP_API_URL || 'https://valu8-api.YOUR-SUBDOMAIN.workers.dev/api'
     : 'http://localhost:8787/api';
 
   static async generateFollowup(initialInput: string): Promise<string> {
