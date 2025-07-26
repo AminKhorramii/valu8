@@ -1,6 +1,9 @@
-import React, { useState, useRef } from 'react';
-import { Share, Users, ChevronRight, TrendingUp, TrendingDown, Minus, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Share, Users, ChevronRight, TrendingUp, TrendingDown, Minus, Clock, CheckCircle, AlertCircle, Settings } from 'lucide-react';
 import { researchSections, competitiveAnalysisSections, mockTeamAnalysis, ResearchItem } from '../data/longResearchData';
+import { ApiKeyManager } from '../utils/apiKeyManager';
+import { MistralClient } from '../utils/mistralClient';
+import ApiKeyModal from './ApiKeyModal';
 
 interface LongResearchPageProps {
   isVCMode?: boolean;
@@ -10,6 +13,10 @@ const LongResearchPage: React.FC<LongResearchPageProps> = ({ isVCMode = false })
   const [activeSection, setActiveSection] = useState('business-overview');
   const [showShareModal, setShowShareModal] = useState(false);
   const [showTeamModal, setShowTeamModal] = useState(false);
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [researchData, setResearchData] = useState(researchSections);
+  const [teamAnalysis, setTeamAnalysis] = useState(mockTeamAnalysis);
   const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({});
 
   const scrollToSection = (sectionId: string) => {
@@ -43,6 +50,117 @@ const LongResearchPage: React.FC<LongResearchPageProps> = ({ isVCMode = false })
     return <TrendingDown className="w-4 h-4 text-red-400" />;
   };
 
+  useEffect(() => {
+    generateResearch();
+  }, []);
+
+  const generateResearch = async () => {
+    // Check if we have API key
+    if (!ApiKeyManager.hasApiKey()) {
+      setShowApiKeyModal(true);
+      return;
+    }
+
+    // Get saved research inputs
+    const savedData = ApiKeyManager.getResearchData();
+    if (!savedData?.inputs) {
+      console.log('No research inputs found, using mock data');
+      return;
+    }
+
+    setIsGenerating(true);
+
+    try {
+      // Generate comprehensive research
+      const research = await MistralClient.generateComprehensiveResearch(savedData.inputs);
+      
+      if (research && research.research) {
+        // Parse and update research sections with API results
+        const updatedSections = [...researchSections];
+        
+        if (research.research.businessOverview) {
+          const businessSection = updatedSections.find(s => s.id === 'business-overview');
+          if (businessSection && research.research.businessOverview.content) {
+            try {
+              const parsedData = JSON.parse(research.research.businessOverview.content);
+              if (parsedData.items) {
+                businessSection.items = parsedData.items;
+              }
+            } catch (e) {
+              console.log('Using fallback for business overview');
+            }
+          }
+        }
+        
+        if (research.research.marketResearch) {
+          const marketSection = updatedSections.find(s => s.id === 'market-research');
+          if (marketSection && research.research.marketResearch.content) {
+            try {
+              const parsedData = JSON.parse(research.research.marketResearch.content);
+              if (parsedData.items) {
+                marketSection.items = parsedData.items;
+              }
+            } catch (e) {
+              console.log('Using fallback for market research');
+            }
+          }
+        }
+        
+        if (research.research.launchStrategy) {
+          const launchSection = updatedSections.find(s => s.id === 'launch-strategy');
+          if (launchSection && research.research.launchStrategy.content) {
+            try {
+              const parsedData = JSON.parse(research.research.launchStrategy.content);
+              if (parsedData.items) {
+                launchSection.items = parsedData.items;
+              }
+            } catch (e) {
+              console.log('Using fallback for launch strategy');
+            }
+          }
+        }
+        
+        if (research.research.fundingStrategy) {
+          const fundingSection = updatedSections.find(s => s.id === 'funding-strategy');
+          if (fundingSection && research.research.fundingStrategy.content) {
+            try {
+              const parsedData = JSON.parse(research.research.fundingStrategy.content);
+              if (parsedData.items) {
+                fundingSection.items = parsedData.items;
+              }
+            } catch (e) {
+              console.log('Using fallback for funding strategy');
+            }
+          }
+        }
+        
+        setResearchData(updatedSections);
+        console.log('Research data updated with API results');
+      }
+
+      // Generate team analysis if in VC mode
+      if (isVCMode && savedData.inputs.teamUrls?.length > 0) {
+        const teamResults = await MistralClient.analyzeTeam(savedData.inputs.teamUrls);
+        if (teamResults && teamResults.analysis) {
+          try {
+            const parsedTeamData = JSON.parse(teamResults.analysis);
+            if (Array.isArray(parsedTeamData)) {
+              setTeamAnalysis(parsedTeamData);
+            }
+          } catch (e) {
+            console.log('Using fallback team analysis');
+          }
+        }
+      }
+
+    } catch (error) {
+      console.error('Research generation failed:', error);
+      // Continue with mock data
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Top Navbar */}
@@ -51,6 +169,20 @@ const LongResearchPage: React.FC<LongResearchPageProps> = ({ isVCMode = false })
           <h1 className="text-xl font-bold gradient-logo">valu8</h1>
           
           <div className="flex items-center gap-4">
+            {isGenerating && (
+              <div className="flex items-center gap-2 text-yellow-400 text-sm">
+                <div className="animate-spin w-4 h-4 border-2 border-yellow-400 border-t-transparent rounded-full"></div>
+                Generating research...
+              </div>
+            )}
+
+            <button
+              onClick={() => setShowApiKeyModal(true)}
+              className="flex items-center gap-2 px-3 py-2 text-gray-400 hover:text-white transition-colors"
+            >
+              <Settings className="w-4 h-4" />
+            </button>
+
             {isVCMode && (
               <button
                 onClick={() => setShowTeamModal(true)}
